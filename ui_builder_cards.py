@@ -30,6 +30,7 @@ def create_card(
     border_color = "#667eea" if not is_widget else "#17a2b8"
     icon_color = "#667eea" if not is_widget else "#17a2b8"
 
+    # Use a single Button with HTML description for full clickability
     card = widgets.Button(
         description="",
         tooltip=f"{title}: {description}",
@@ -42,44 +43,54 @@ def create_card(
         )
     )
 
-    # We'll use HTML overlay for the card content
-    card_content = widgets.HTML(f'''
-        <div style="
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100%;
-            padding: 15px;
-            text-align: center;
-            cursor: pointer;
-            background: {bg_color};
-            border-radius: 10px;
-        ">
-            <div style="font-size: 2rem; color: {icon_color}; margin-bottom: 10px;">
-                <i class="fa fa-{icon}"></i>
-            </div>
-            <div style="font-weight: 600; font-size: 1rem; margin-bottom: 5px; color: #333;">
-                {title}
-            </div>
-            <div style="font-size: 0.8rem; color: #666; line-height: 1.3;">
-                {description[:50] + '...' if len(description) > 50 else description}
-            </div>
-        </div>
-    ''')
+    # Add custom styling via add_class and style
+    card.style.button_color = bg_color
 
-    card.on_click(lambda b: on_click())
-
-    # Stack button and HTML content
-    return widgets.VBox(
-        [card_content, card],
+    # Create an Output widget to hold styled HTML inside the button area
+    card_display = widgets.Output(
         layout=widgets.Layout(
             width="200px",
             height="150px",
             margin="8px",
-            position="relative",
         )
     )
+
+    with card_display:
+        from IPython.display import display, HTML
+        display(HTML(f'''
+            <div onclick="this.parentElement.parentElement.querySelector('button').click()" style="
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                height: 140px;
+                padding: 15px;
+                text-align: center;
+                cursor: pointer;
+                background: {bg_color};
+                border: 2px solid {border_color};
+                border-radius: 12px;
+                transition: transform 0.2s, box-shadow 0.2s;
+            " onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)';"
+               onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none';">
+                <div style="font-size: 2rem; color: {icon_color}; margin-bottom: 10px;">
+                    <i class="fa fa-{icon}"></i>
+                </div>
+                <div style="font-weight: 600; font-size: 1rem; margin-bottom: 5px; color: #333;">
+                    {title}
+                </div>
+                <div style="font-size: 0.8rem; color: #666; line-height: 1.3;">
+                    {description[:50] + '...' if len(description) > 50 else description}
+                </div>
+            </div>
+        '''))
+
+    card.on_click(lambda b: on_click())
+
+    # Hidden button that receives the click
+    card.layout.display = 'none'
+
+    return widgets.VBox([card_display, card])
 
 
 def create_card_grid(cards: List[widgets.Widget], columns: int = 3) -> widgets.Widget:
@@ -148,8 +159,13 @@ class NavigationController:
         self.header = self._create_header()
         self.breadcrumb_widget = widgets.HTML("")
         self.back_button = self._create_back_button()
+        self.home_button = self._create_home_button()  # Small button for widget view
         self.cards_area = widgets.VBox([])
         self.content_area = widgets.VBox([])
+        self.navigation_area = widgets.VBox([])  # Holds header, nav, cards
+
+        # Track if we're viewing a widget
+        self.viewing_widget = False
 
         # Initial render
         self._update_breadcrumb()
@@ -190,6 +206,17 @@ class NavigationController:
             layout=widgets.Layout(width="100px", margin="0 10px 10px 0")
         )
         btn.on_click(lambda b: self.go_back())
+        return btn
+
+    def _create_home_button(self) -> widgets.Button:
+        """Create a small home button for returning from widget view."""
+        btn = widgets.Button(
+            description="Menu",
+            icon="home",
+            button_style="warning",
+            layout=widgets.Layout(width="80px", margin="5px", display="none")
+        )
+        btn.on_click(lambda b: self.return_to_menu())
         return btn
 
     def _update_breadcrumb(self) -> None:
@@ -275,8 +302,23 @@ class NavigationController:
             self._update_breadcrumb()
             self._render_cards()
 
+    def return_to_menu(self) -> None:
+        """Return from widget view to card navigation."""
+        self.viewing_widget = False
+        # Show navigation, hide home button
+        self.navigation_area.layout.display = "block"
+        self.home_button.layout.display = "none"
+        # Clear widget content
+        self.content_area.children = []
+
     def load_widget(self, widget_config: WidgetConfig) -> None:
-        """Lazy-load a widget into the content area."""
+        """Lazy-load a widget into the content area (full screen mode)."""
+        self.viewing_widget = True
+
+        # Hide navigation, show home button
+        self.navigation_area.layout.display = "none"
+        self.home_button.layout.display = "block"
+
         if widget_config.id not in self.registry:
             self.content_area.children = [
                 widgets.HTML(
@@ -299,21 +341,19 @@ class NavigationController:
             widget_factory = self.registry[widget_config.id]
             widget_ui = widget_factory()
 
-            # Wrap with header
+            # Compact header with widget name
             widget_header = widgets.HTML(f'''
                 <div style="
-                    padding: 15px;
-                    background: #f8f9fa;
-                    border-left: 4px solid #17a2b8;
-                    margin: 20px 0 10px 0;
+                    padding: 10px 15px;
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    color: white;
+                    margin-bottom: 10px;
+                    border-radius: 5px;
                 ">
-                    <h3 style="margin: 0 0 5px 0; color: #333;">
-                        <i class="fa fa-{widget_config.icon}" style="color: #17a2b8;"></i>
+                    <span style="font-size: 1.1rem; font-weight: 600;">
+                        <i class="fa fa-{widget_config.icon}"></i>
                         {widget_config.name}
-                    </h3>
-                    <p style="margin: 0; color: #666; font-size: 0.9rem;">
-                        {widget_config.description}
-                    </p>
+                    </span>
                 </div>
             ''')
 
@@ -334,9 +374,15 @@ class NavigationController:
             self.breadcrumb_widget
         ])
 
-        return widgets.VBox([
+        # Group navigation elements together so they can be hidden/shown as one
+        self.navigation_area.children = [
             self.header,
             nav_bar,
-            self.cards_area,
-            self.content_area
+            self.cards_area
+        ]
+
+        return widgets.VBox([
+            self.home_button,      # Shown only when viewing widget
+            self.navigation_area,  # Hidden when viewing widget
+            self.content_area      # Widget renders here (full screen)
         ])
