@@ -30,40 +30,34 @@ def create_card(
     border_color = "#667eea" if not is_widget else "#17a2b8"
     icon_color = "#667eea" if not is_widget else "#17a2b8"
 
-    # Use a single Button with HTML description for full clickability
+    # Create a proper clickable button
     card = widgets.Button(
         description="",
         tooltip=f"{title}: {description}",
         layout=widgets.Layout(
             width="200px",
-            height="150px",
-            margin="8px",
-            border=f"2px solid {border_color}",
-            border_radius="12px",
+            height="160px",
+            margin="12px 8px",
+            padding="0",
         )
     )
 
-    # Add custom styling via add_class and style
+    # Style the button
     card.style.button_color = bg_color
 
-    # Create an Output widget to hold styled HTML inside the button area
-    card_display = widgets.Output(
-        layout=widgets.Layout(
-            width="200px",
-            height="150px",
-            margin="8px",
-        )
-    )
+    # Add click handler
+    card.on_click(lambda b: on_click())
 
-    with card_display:
-        from IPython.display import display, HTML
-        display(HTML(f'''
-            <div onclick="this.parentElement.parentElement.querySelector('button').click()" style="
+    # Create HTML content to overlay on the button
+    card_html = widgets.HTML(f'''
+        <style>
+            .card-container {{
                 display: flex;
                 flex-direction: column;
                 align-items: center;
                 justify-content: center;
-                height: 140px;
+                height: 150px;
+                width: 196px;
                 padding: 15px;
                 text-align: center;
                 cursor: pointer;
@@ -71,26 +65,50 @@ def create_card(
                 border: 2px solid {border_color};
                 border-radius: 12px;
                 transition: transform 0.2s, box-shadow 0.2s;
-            " onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)';"
-               onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none';">
-                <div style="font-size: 2rem; color: {icon_color}; margin-bottom: 10px;">
-                    <i class="fa fa-{icon}"></i>
-                </div>
-                <div style="font-weight: 600; font-size: 1rem; margin-bottom: 5px; color: #333;">
-                    {title}
-                </div>
-                <div style="font-size: 0.8rem; color: #666; line-height: 1.3;">
-                    {description[:50] + '...' if len(description) > 50 else description}
-                </div>
+                box-sizing: border-box;
+                margin-top: 5px;
+            }}
+            .card-container:hover {{
+                transform: translateY(-3px);
+                box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+            }}
+        </style>
+        <div class="card-container">
+            <div style="font-size: 2rem; color: {icon_color}; margin-bottom: 10px;">
+                <i class="fa fa-{icon}"></i>
             </div>
-        '''))
+            <div style="font-weight: 600; font-size: 1rem; margin-bottom: 5px; color: #333;">
+                {title}
+            </div>
+            <div style="font-size: 0.8rem; color: #666; line-height: 1.3;">
+                {description[:50] + '...' if len(description) > 50 else description}
+            </div>
+        </div>
+    ''')
 
-    card.on_click(lambda b: on_click())
+    # Stack: HTML on top (visible), button behind (clickable)
+    container = widgets.Box(
+        [card, card_html],
+        layout=widgets.Layout(
+            width="210px",
+            height="170px",
+            margin="8px",
+        )
+    )
 
-    # Hidden button that receives the click
-    card.layout.display = 'none'
+    # Position HTML over the button using CSS
+    card.layout.position = "absolute"
+    card.layout.opacity = "0"  # Invisible but clickable
+    card.layout.width = "200px"
+    card.layout.height = "160px"
+    card.layout.z_index = "10"
 
-    return widgets.VBox([card_display, card])
+    card_html.layout.position = "absolute"
+    card_html.layout.z_index = "1"
+
+    container.layout.position = "relative"
+
+    return container
 
 
 def create_card_grid(cards: List[widgets.Widget], columns: int = 3) -> widgets.Widget:
@@ -341,23 +359,8 @@ class NavigationController:
             widget_factory = self.registry[widget_config.id]
             widget_ui = widget_factory()
 
-            # Compact header with widget name
-            widget_header = widgets.HTML(f'''
-                <div style="
-                    padding: 10px 15px;
-                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                    color: white;
-                    margin-bottom: 10px;
-                    border-radius: 5px;
-                ">
-                    <span style="font-size: 1.1rem; font-weight: 600;">
-                        <i class="fa fa-{widget_config.icon}"></i>
-                        {widget_config.name}
-                    </span>
-                </div>
-            ''')
-
-            self.content_area.children = [widget_header, widget_ui]
+            # Full screen - just the widget, no header
+            self.content_area.children = [widget_ui]
 
         except Exception as e:
             self.content_area.children = [
