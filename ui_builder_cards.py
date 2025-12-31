@@ -96,17 +96,23 @@ def create_card(
         )
     )
 
-    # Position HTML over the button using CSS
+    # Position button on top (invisible but clickable)
     card.layout.position = "absolute"
     card.layout.opacity = "0"  # Invisible but clickable
-    card.layout.width = "200px"
-    card.layout.height = "160px"
-    card.layout.z_index = "10"
+    card.layout.width = "210px"
+    card.layout.height = "170px"
+    card.layout.z_index = "100"
+    card.layout.top = "0"
+    card.layout.left = "0"
 
+    # HTML behind for visuals only
     card_html.layout.position = "absolute"
     card_html.layout.z_index = "1"
+    card_html.layout.top = "0"
+    card_html.layout.left = "0"
 
     container.layout.position = "relative"
+    container.layout.overflow = "visible"
 
     return container
 
