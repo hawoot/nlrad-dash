@@ -26,89 +26,37 @@ def create_card(
         A clickable card widget
     """
     # Colors for groups vs widgets
-    bg_color = "#f8f9fa" if not is_widget else "#e8f4f8"
+    bg_color = "#f0f4ff" if not is_widget else "#e8f8f5"
     border_color = "#667eea" if not is_widget else "#17a2b8"
-    icon_color = "#667eea" if not is_widget else "#17a2b8"
 
     # Truncate description
-    short_desc = description[:50] + '...' if len(description) > 50 else description
+    short_desc = description[:40] + '...' if len(description) > 40 else description
 
-    # Generate unique ID for this card's styles
-    import random
-    card_id = f"card_{random.randint(10000, 99999)}"
-
-    # Create Output widget - this lets us render custom HTML that's also clickable
-    output = widgets.Output(
-        layout=widgets.Layout(
-            width="220px",
-            height="160px",
-            margin="10px",
-        )
-    )
-
-    with output:
-        from IPython.display import display, HTML
-        display(HTML(f'''
-            <style>
-                #{card_id} {{
-                    display: flex;
-                    flex-direction: column;
-                    align-items: center;
-                    justify-content: center;
-                    width: 200px;
-                    height: 150px;
-                    padding: 15px;
-                    text-align: center;
-                    cursor: pointer;
-                    background: {bg_color};
-                    border: 2px solid {border_color};
-                    border-radius: 12px;
-                    box-sizing: border-box;
-                    transition: transform 0.2s ease, box-shadow 0.2s ease;
-                    user-select: none;
-                }}
-                #{card_id}:hover {{
-                    transform: translateY(-4px);
-                    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-                }}
-                #{card_id}:active {{
-                    transform: translateY(-2px);
-                    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-                }}
-            </style>
-            <div id="{card_id}">
-                <div style="font-size: 2.5rem; color: {icon_color}; margin-bottom: 10px;">
-                    <i class="fa fa-{icon}"></i>
-                </div>
-                <div style="font-weight: 600; font-size: 1.1rem; color: #333; margin-bottom: 6px;">
-                    {title}
-                </div>
-                <div style="font-size: 0.8rem; color: #666; line-height: 1.4;">
-                    {short_desc}
-                </div>
-            </div>
-        '''))
-
-    # Invisible button on top for click handling
+    # Just a button - no overlays
     button = widgets.Button(
-        description="",
+        description=f"{title}",
+        icon=icon,
         tooltip=f"{title}: {description}",
         layout=widgets.Layout(
-            width="220px",
-            height="160px",
-            margin="-160px 0 0 0",  # Pull up to overlap
-            opacity="0",
+            width="200px",
+            height="140px",
+            border=f"2px solid {border_color}",
+            border_radius="12px",
         )
     )
+    button.style.button_color = bg_color
+    button.style.font_weight = "bold"
     button.on_click(lambda b: on_click())
 
+    # Add description below the button
+    desc_html = widgets.HTML(
+        f'<div style="text-align:center; font-size:0.8rem; color:#666; '
+        f'width:200px; padding:5px 0;">{short_desc}</div>'
+    )
+
     return widgets.VBox(
-        [output, button],
-        layout=widgets.Layout(
-            width="220px",
-            height="160px",
-            margin="10px",
-        )
+        [button, desc_html],
+        layout=widgets.Layout(margin="10px", align_items="center")
     )
 
 
