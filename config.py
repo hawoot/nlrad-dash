@@ -5,7 +5,6 @@ from models import (
     GroupConfig,
     WidgetConfig,
     AccessControlConfig,
-    RoleConfig,
     UserConfig,
 )
 
@@ -34,7 +33,7 @@ def get_config() -> DashboardConfig:
                                 name="System Metrics",
                                 description="Real-time system health and performance metrics",
                                 icon="heartbeat",
-                                permissions=["analytics.view", "analytics.performance"],
+                                roles=["admin", "analyst"],
                             )
                         ],
                     )
@@ -45,7 +44,7 @@ def get_config() -> DashboardConfig:
                         name="Sales Dashboard",
                         description="Monthly and quarterly sales overview",
                         icon="dollar-sign",
-                        permissions=["analytics.view"],
+                        roles=["admin", "analyst", "viewer"],
                     )
                 ],
             ),
@@ -60,7 +59,7 @@ def get_config() -> DashboardConfig:
                         name="Data Entry Form",
                         description="Standard data input forms",
                         icon="clipboard-list",
-                        permissions=["data_entry.edit"],
+                        roles=["admin", "data_entry"],
                     )
                 ],
             ),
@@ -75,28 +74,12 @@ def get_config() -> DashboardConfig:
                         name="Settings",
                         description="Dashboard configuration and preferences",
                         icon="sliders-h",
-                        permissions=["admin.manage"],
+                        roles=["admin"],
                     )
                 ],
             ),
         ],
         access_control=AccessControlConfig(
-            default_permissions=[],
-            roles={
-                "admin": RoleConfig(
-                    permissions=[
-                        "analytics.view",
-                        "analytics.performance",
-                        "data_entry.edit",
-                        "admin.manage",
-                    ]
-                ),
-                "analyst": RoleConfig(
-                    permissions=["analytics.view", "analytics.performance"]
-                ),
-                "data_entry": RoleConfig(permissions=["data_entry.edit"]),
-                "viewer": RoleConfig(permissions=["analytics.view"]),
-            },
             users={
                 "alice": UserConfig(roles=["admin"]),
                 "bob": UserConfig(roles=["analyst"]),

@@ -11,7 +11,7 @@ class WidgetConfig:
     name: str
     description: str = ""
     icon: str = "cube"
-    permissions: List[str] = field(default_factory=list)
+    roles: List[str] = field(default_factory=list)  # roles that can access this widget
 
 
 @dataclass
@@ -26,23 +26,14 @@ class GroupConfig:
 
 
 @dataclass
-class RoleConfig:
-    """Configuration for a user role."""
-    permissions: List[str] = field(default_factory=list)
-
-
-@dataclass
 class UserConfig:
     """User-specific access configuration."""
     roles: List[str] = field(default_factory=list)
-    additional_permissions: List[str] = field(default_factory=list)
 
 
 @dataclass
 class AccessControlConfig:
-    """Full access control configuration."""
-    default_permissions: List[str] = field(default_factory=list)
-    roles: Dict[str, RoleConfig] = field(default_factory=dict)
+    """Access control configuration."""
     users: Dict[str, UserConfig] = field(default_factory=dict)
 
 

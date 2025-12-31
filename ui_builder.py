@@ -4,7 +4,7 @@ from typing import List
 import ipywidgets as widgets
 
 from models import GroupConfig
-from widgets import WIDGET_REGISTRY
+from widgets.registry import WIDGET_REGISTRY
 
 
 def build_group_ui(group: GroupConfig, level: int = 0) -> widgets.Widget:
