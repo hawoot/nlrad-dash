@@ -26,69 +26,90 @@ def create_card(
         A clickable card widget
     """
     # Colors for groups vs widgets
-    bg_color = "#f0f4ff" if not is_widget else "#e8f8f5"
+    bg_color = "#f8f9fa" if not is_widget else "#e8f4f8"
     border_color = "#667eea" if not is_widget else "#17a2b8"
     icon_color = "#667eea" if not is_widget else "#17a2b8"
 
     # Truncate description
     short_desc = description[:50] + '...' if len(description) > 50 else description
 
-    # Create the main clickable button - large and prominent
-    card = widgets.Button(
-        description="",  # We'll use HTML for content
+    # Generate unique ID for this card's styles
+    import random
+    card_id = f"card_{random.randint(10000, 99999)}"
+
+    # Create Output widget - this lets us render custom HTML that's also clickable
+    output = widgets.Output(
+        layout=widgets.Layout(
+            width="220px",
+            height="160px",
+            margin="10px",
+        )
+    )
+
+    with output:
+        from IPython.display import display, HTML
+        display(HTML(f'''
+            <style>
+                #{card_id} {{
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    width: 200px;
+                    height: 150px;
+                    padding: 15px;
+                    text-align: center;
+                    cursor: pointer;
+                    background: {bg_color};
+                    border: 2px solid {border_color};
+                    border-radius: 12px;
+                    box-sizing: border-box;
+                    transition: transform 0.2s ease, box-shadow 0.2s ease;
+                    user-select: none;
+                }}
+                #{card_id}:hover {{
+                    transform: translateY(-4px);
+                    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+                }}
+                #{card_id}:active {{
+                    transform: translateY(-2px);
+                    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+                }}
+            </style>
+            <div id="{card_id}">
+                <div style="font-size: 2.5rem; color: {icon_color}; margin-bottom: 10px;">
+                    <i class="fa fa-{icon}"></i>
+                </div>
+                <div style="font-weight: 600; font-size: 1.1rem; color: #333; margin-bottom: 6px;">
+                    {title}
+                </div>
+                <div style="font-size: 0.8rem; color: #666; line-height: 1.4;">
+                    {short_desc}
+                </div>
+            </div>
+        '''))
+
+    # Invisible button on top for click handling
+    button = widgets.Button(
+        description="",
         tooltip=f"{title}: {description}",
         layout=widgets.Layout(
-            width="200px",
-            height="140px",
-            margin="0",
-            border=f"2px solid {border_color}",
-            border_radius="12px",
+            width="220px",
+            height="160px",
+            margin="-160px 0 0 0",  # Pull up to overlap
+            opacity="0",
         )
     )
-    card.style.button_color = bg_color
-    card.on_click(lambda b: on_click())
+    button.on_click(lambda b: on_click())
 
-    # Create visual content above the button (non-interactive, just for looks)
-    visual = widgets.HTML(f'''
-        <div style="
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            padding: 15px;
-            pointer-events: none;
-        ">
-            <div style="font-size: 2.2rem; color: {icon_color}; margin-bottom: 8px;">
-                <i class="fa fa-{icon}"></i>
-            </div>
-            <div style="font-weight: 600; font-size: 1rem; color: #333; margin-bottom: 4px;">
-                {title}
-            </div>
-            <div style="font-size: 0.75rem; color: #666; line-height: 1.3;">
-                {short_desc}
-            </div>
-        </div>
-    ''')
-
-    # Stack visual on top of button using VBox
-    # The button is the actual clickable element
-    card_container = widgets.VBox(
-        [visual, card],
+    return widgets.VBox(
+        [output, button],
         layout=widgets.Layout(
-            width="200px",
-            height="140px",
+            width="220px",
+            height="160px",
             margin="10px",
-            overflow="hidden",
         )
     )
-
-    # Position visual to overlap button (visual at top, button fills space)
-    visual.layout.margin = "-140px 0 0 0"  # Pull visual up to overlap button
-    visual.layout.height = "140px"
-    visual.layout.width = "200px"
-
-    return card_container
 
 
 def create_card_grid(cards: List[widgets.Widget], columns: int = 3) -> widgets.Widget:
