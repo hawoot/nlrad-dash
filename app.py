@@ -2,7 +2,7 @@
 """Dashboard application entry point."""
 from config import get_config
 from access_control import AccessController
-from ui_builder_cards import NavigationController
+from ui_builder import NavigationController
 from widgets.registry import WIDGET_REGISTRY
 
 
