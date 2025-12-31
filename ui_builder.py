@@ -4,11 +4,11 @@
 # =============================================================================
 # IMPORTS
 # =============================================================================
-import sys
 import traceback
 from typing import Callable, Dict, List
 import ipywidgets as widgets
 from ipyevents import Event
+from IPython.display import display
 
 from models import GroupConfig, WidgetConfig
 
@@ -385,66 +385,19 @@ class NavigationController:
             )
         ]
 
-        # Create and display the widget
-        try:
-            widget_factory = self.registry[widget_config.id]
-            widget_ui = widget_factory()
-            self.content_area.children = [widget_ui]
-        except Exception:
-            # Build detailed error report with local variables
-            exc_type, exc_value, exc_tb = sys.exc_info()
+        # Create output widget to capture runtime errors from widget interactions
+        output = widgets.Output()
 
-            error_parts = []
-            error_parts.append(f"Exception: {exc_type.__name__}: {exc_value}\n")
-            error_parts.append("\n" + "=" * 60 + "\n")
-            error_parts.append("STACK TRACE WITH LOCAL VARIABLES\n")
-            error_parts.append("=" * 60 + "\n\n")
+        widget_factory = self.registry[widget_config.id]
 
-            # Walk through the traceback frames
-            tb_frame = exc_tb
-            while tb_frame is not None:
-                frame = tb_frame.tb_frame
-                lineno = tb_frame.tb_lineno
-                filename = frame.f_code.co_filename
-                funcname = frame.f_code.co_name
+        with output:
+            try:
+                widget_ui = widget_factory()
+                display(widget_ui)
+            except Exception:
+                print(traceback.format_exc())
 
-                error_parts.append(f"File: {filename}\n")
-                error_parts.append(f"Function: {funcname}, Line: {lineno}\n")
-                error_parts.append("-" * 40 + "\n")
-                error_parts.append("Local variables:\n")
-
-                for var_name, var_value in frame.f_locals.items():
-                    try:
-                        val_repr = repr(var_value)
-                        if len(val_repr) > 200:
-                            val_repr = val_repr[:200] + "..."
-                    except Exception:
-                        val_repr = "<unable to repr>"
-                    error_parts.append(f"  {var_name} = {val_repr}\n")
-
-                error_parts.append("\n")
-                tb_frame = tb_frame.tb_next
-
-            # Add the standard traceback at the end
-            error_parts.append("=" * 60 + "\n")
-            error_parts.append("STANDARD TRACEBACK\n")
-            error_parts.append("=" * 60 + "\n")
-            error_parts.append(traceback.format_exc())
-
-            full_error = "".join(error_parts)
-
-            self.content_area.children = [
-                widgets.HTML(
-                    f'<div style="padding: 20px;">'
-                    f'<p style="color: #c00; font-weight: bold; margin-bottom: 10px;">'
-                    f'Error loading widget:</p>'
-                    f'<pre style="background: #fee; color: #900; padding: 15px; '
-                    f'border-radius: 8px; overflow-x: auto; font-size: 0.75rem; '
-                    f'white-space: pre-wrap; word-wrap: break-word; max-height: 600px; '
-                    f'overflow-y: auto;">{full_error}</pre>'
-                    f'</div>'
-                )
-            ]
+        self.content_area.children = [output]
 
     # -------------------------------------------------------------------------
     # Rendering Methods
