@@ -2,7 +2,8 @@
 """Dashboard application entry point."""
 from config import get_config
 from access_control import AccessController
-from ui_builder import build_dashboard_ui
+from ui_builder_cards import NavigationController
+from widgets.registry import WIDGET_REGISTRY
 
 
 def create_app(username: str = "alice"):
@@ -19,4 +20,11 @@ def create_app(username: str = "alice"):
     config = get_config()
     ac = AccessController(config)
     filtered_groups = ac.filter_groups_for_user(username)
-    return build_dashboard_ui(config.title, filtered_groups, username)
+
+    nav = NavigationController(
+        title=config.title,
+        username=username,
+        groups=filtered_groups,
+        widget_registry=WIDGET_REGISTRY
+    )
+    return nav.build_ui()
