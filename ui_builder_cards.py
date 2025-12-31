@@ -13,7 +13,7 @@ def create_card(
     on_click: Callable,
     is_widget: bool = False
 ) -> widgets.Widget:
-    """Create a clickable card using a simple Button widget.
+    """Create a clickable card using a styled Button widget.
 
     Args:
         title: Card title
@@ -25,41 +25,70 @@ def create_card(
     Returns:
         A clickable card widget
     """
-    # Use different colors for groups vs widgets
+    # Colors for groups vs widgets
+    bg_color = "#f0f4ff" if not is_widget else "#e8f8f5"
     border_color = "#667eea" if not is_widget else "#17a2b8"
+    icon_color = "#667eea" if not is_widget else "#17a2b8"
 
     # Truncate description
-    short_desc = description[:40] + '...' if len(description) > 40 else description
+    short_desc = description[:50] + '...' if len(description) > 50 else description
 
-    # Create a simple, reliably clickable button
+    # Create the main clickable button - large and prominent
     card = widgets.Button(
-        description=title,
-        icon=icon,
+        description="",  # We'll use HTML for content
         tooltip=f"{title}: {description}",
-        button_style="info" if not is_widget else "success",
         layout=widgets.Layout(
-            width="180px",
-            height="120px",
-            margin="10px",
+            width="200px",
+            height="140px",
+            margin="0",
+            border=f"2px solid {border_color}",
+            border_radius="12px",
         )
     )
-
-    # Add click handler
+    card.style.button_color = bg_color
     card.on_click(lambda b: on_click())
 
-    # Wrap in a VBox with description below
-    desc_label = widgets.HTML(
-        f'<div style="text-align: center; font-size: 0.75rem; color: #666; '
-        f'width: 180px; margin: 0 10px;">{short_desc}</div>'
-    )
+    # Create visual content above the button (non-interactive, just for looks)
+    visual = widgets.HTML(f'''
+        <div style="
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 15px;
+            pointer-events: none;
+        ">
+            <div style="font-size: 2.2rem; color: {icon_color}; margin-bottom: 8px;">
+                <i class="fa fa-{icon}"></i>
+            </div>
+            <div style="font-weight: 600; font-size: 1rem; color: #333; margin-bottom: 4px;">
+                {title}
+            </div>
+            <div style="font-size: 0.75rem; color: #666; line-height: 1.3;">
+                {short_desc}
+            </div>
+        </div>
+    ''')
 
-    return widgets.VBox(
-        [card, desc_label],
+    # Stack visual on top of button using VBox
+    # The button is the actual clickable element
+    card_container = widgets.VBox(
+        [visual, card],
         layout=widgets.Layout(
-            align_items="center",
-            margin="5px",
+            width="200px",
+            height="140px",
+            margin="10px",
+            overflow="hidden",
         )
     )
+
+    # Position visual to overlap button (visual at top, button fills space)
+    visual.layout.margin = "-140px 0 0 0"  # Pull visual up to overlap button
+    visual.layout.height = "140px"
+    visual.layout.width = "200px"
+
+    return card_container
 
 
 def create_card_grid(cards: List[widgets.Widget], columns: int = 3) -> widgets.Widget:
