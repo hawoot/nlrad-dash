@@ -187,42 +187,90 @@ def create_breadcrumb(path: List[str]) -> widgets.HTML:
     ''')
 
 
-def create_back_button(on_click: Callable) -> widgets.Button:
-    """Create a back navigation button.
+def create_back_button(on_click: Callable) -> widgets.Widget:
+    """Create a modern styled back navigation button.
 
     Args:
         on_click: Callback when button is clicked
 
     Returns:
-        Back button widget
+        Back button widget (HTML with ipyevents)
     """
-    btn = widgets.Button(
-        description="Back",
-        icon="arrow-left",
-        button_style="info",
-        layout=widgets.Layout(width="100px", margin="0 10px 10px 0", display="none")
+    html_btn = widgets.HTML('''
+        <div style="
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9rem;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            transition: transform 0.2s, box-shadow 0.2s;
+        "
+        onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(102, 126, 234, 0.5)';"
+        onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(102, 126, 234, 0.4)';">
+            <i class="fa fa-arrow-left"></i>
+            <span>Back</span>
+        </div>
+    ''')
+
+    event = Event(source=html_btn, watched_events=['click'])
+    event.on_dom_event(lambda e: on_click())
+
+    container = widgets.Box(
+        [html_btn],
+        layout=widgets.Layout(display='none', margin='0 10px 10px 0')
     )
-    btn.on_click(lambda b: on_click())
-    return btn
+    container._event = event  # Prevent garbage collection
+
+    return container
 
 
-def create_menu_button(on_click: Callable) -> widgets.Button:
-    """Create a menu button for returning from widget view.
+def create_menu_button(on_click: Callable) -> widgets.Widget:
+    """Create a modern styled menu button for returning from widget view.
 
     Args:
         on_click: Callback when button is clicked
 
     Returns:
-        Menu button widget
+        Menu button widget (HTML with ipyevents)
     """
-    btn = widgets.Button(
-        description="Menu",
-        icon="home",
-        button_style="warning",
-        layout=widgets.Layout(width="80px", margin="5px", display="none")
+    html_btn = widgets.HTML('''
+        <div style="
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9rem;
+            box-shadow: 0 4px 15px rgba(245, 87, 108, 0.4);
+            transition: transform 0.2s, box-shadow 0.2s;
+        "
+        onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(245, 87, 108, 0.5)';"
+        onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(245, 87, 108, 0.4)';">
+            <i class="fa fa-home"></i>
+            <span>Menu</span>
+        </div>
+    ''')
+
+    event = Event(source=html_btn, watched_events=['click'])
+    event.on_dom_event(lambda e: on_click())
+
+    container = widgets.Box(
+        [html_btn],
+        layout=widgets.Layout(display='none', margin='5px')
     )
-    btn.on_click(lambda b: on_click())
-    return btn
+    container._event = event  # Prevent garbage collection
+
+    return container
 
 
 # =============================================================================
