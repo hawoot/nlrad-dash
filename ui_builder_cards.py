@@ -40,6 +40,7 @@ def create_card(
         layout=widgets.Layout(
             width="200px",
             height="140px",
+            margin="10px",
             border=f"2px solid {border_color}",
             border_radius="12px",
         )
@@ -48,16 +49,7 @@ def create_card(
     button.style.font_weight = "bold"
     button.on_click(lambda b: on_click())
 
-    # Add description below the button
-    desc_html = widgets.HTML(
-        f'<div style="text-align:center; font-size:0.8rem; color:#666; '
-        f'width:200px; padding:5px 0;">{short_desc}</div>'
-    )
-
-    return widgets.VBox(
-        [button, desc_html],
-        layout=widgets.Layout(margin="10px", align_items="center")
-    )
+    return button
 
 
 def create_card_grid(cards: List[widgets.Widget], columns: int = 3) -> widgets.Widget:
