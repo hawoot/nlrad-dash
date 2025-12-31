@@ -28,7 +28,7 @@ class WidgetConfig:
     id: str
     name: str
     description: str = ""
-    icon: str = "cube"
+    icon: str = "th-large"
     roles: List[Role] = field(default_factory=list)  # roles that can access this widget
 
 

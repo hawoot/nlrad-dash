@@ -21,19 +21,16 @@ def get_config() -> DashboardConfig:
                 id="analytics",
                 name="Analytics",
                 description="Data analysis and reporting tools",
-                icon="chart-bar",
                 groups=[
                     GroupConfig(
                         id="analytics.performance",
                         name="Performance",
                         description="System and application performance metrics",
-                        icon="tachometer-alt",
                         widgets=[
                             WidgetConfig(
                                 id="metrics",
                                 name="System Metrics",
                                 description="Real-time system health and performance metrics",
-                                icon="heartbeat",
                                 roles=[Role.ADMIN, Role.ANALYST],
                             )
                         ],
@@ -44,7 +41,6 @@ def get_config() -> DashboardConfig:
                         id="sales_dashboard",
                         name="Sales Dashboard",
                         description="Monthly and quarterly sales overview",
-                        icon="dollar-sign",
                         roles=[Role.ADMIN, Role.ANALYST, Role.VIEWER],
                     )
                 ],
@@ -53,13 +49,11 @@ def get_config() -> DashboardConfig:
                 id="data_entry",
                 name="Data Entry",
                 description="Data input and management tools",
-                icon="edit",
                 widgets=[
                     WidgetConfig(
                         id="data_form",
                         name="Data Entry Form",
                         description="Standard data input forms",
-                        icon="clipboard-list",
                         roles=[Role.ADMIN, Role.DATA_ENTRY],
                     )
                 ],
@@ -68,13 +62,11 @@ def get_config() -> DashboardConfig:
                 id="admin",
                 name="Administration",
                 description="System administration and settings",
-                icon="cog",
                 widgets=[
                     WidgetConfig(
                         id="settings",
                         name="Settings",
                         description="Dashboard configuration and preferences",
-                        icon="sliders-h",
                         roles=[Role.ADMIN],
                     )
                 ],
