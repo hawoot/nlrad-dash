@@ -12,8 +12,8 @@ def create_card(
     icon: str,
     on_click: Callable,
     is_widget: bool = False
-) -> widgets.Button:
-    """Create a clickable card styled as a button.
+) -> widgets.Widget:
+    """Create a clickable card using a simple Button widget.
 
     Args:
         title: Card title
@@ -23,98 +23,43 @@ def create_card(
         is_widget: True if this card represents a widget (vs a group)
 
     Returns:
-        A styled Button widget
+        A clickable card widget
     """
     # Use different colors for groups vs widgets
-    bg_color = "#f8f9fa" if not is_widget else "#e8f4f8"
     border_color = "#667eea" if not is_widget else "#17a2b8"
-    icon_color = "#667eea" if not is_widget else "#17a2b8"
 
-    # Create a proper clickable button
+    # Truncate description
+    short_desc = description[:40] + '...' if len(description) > 40 else description
+
+    # Create a simple, reliably clickable button
     card = widgets.Button(
-        description="",
+        description=title,
+        icon=icon,
         tooltip=f"{title}: {description}",
+        button_style="info" if not is_widget else "success",
         layout=widgets.Layout(
-            width="200px",
-            height="160px",
-            margin="12px 8px",
-            padding="0",
+            width="180px",
+            height="120px",
+            margin="10px",
         )
     )
-
-    # Style the button
-    card.style.button_color = bg_color
 
     # Add click handler
     card.on_click(lambda b: on_click())
 
-    # Create HTML content to overlay on the button
-    card_html = widgets.HTML(f'''
-        <style>
-            .card-container {{
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-                height: 150px;
-                width: 196px;
-                padding: 15px;
-                text-align: center;
-                cursor: pointer;
-                background: {bg_color};
-                border: 2px solid {border_color};
-                border-radius: 12px;
-                transition: transform 0.2s, box-shadow 0.2s;
-                box-sizing: border-box;
-                margin-top: 5px;
-            }}
-            .card-container:hover {{
-                transform: translateY(-3px);
-                box-shadow: 0 6px 16px rgba(0,0,0,0.15);
-            }}
-        </style>
-        <div class="card-container">
-            <div style="font-size: 2rem; color: {icon_color}; margin-bottom: 10px;">
-                <i class="fa fa-{icon}"></i>
-            </div>
-            <div style="font-weight: 600; font-size: 1rem; margin-bottom: 5px; color: #333;">
-                {title}
-            </div>
-            <div style="font-size: 0.8rem; color: #666; line-height: 1.3;">
-                {description[:50] + '...' if len(description) > 50 else description}
-            </div>
-        </div>
-    ''')
-
-    # Stack: HTML on top (visible), button behind (clickable)
-    container = widgets.Box(
-        [card, card_html],
-        layout=widgets.Layout(
-            width="210px",
-            height="170px",
-            margin="8px",
-        )
+    # Wrap in a VBox with description below
+    desc_label = widgets.HTML(
+        f'<div style="text-align: center; font-size: 0.75rem; color: #666; '
+        f'width: 180px; margin: 0 10px;">{short_desc}</div>'
     )
 
-    # Position button on top (invisible but clickable)
-    card.layout.position = "absolute"
-    card.layout.opacity = "0"  # Invisible but clickable
-    card.layout.width = "210px"
-    card.layout.height = "170px"
-    card.layout.z_index = "100"
-    card.layout.top = "0"
-    card.layout.left = "0"
-
-    # HTML behind for visuals only
-    card_html.layout.position = "absolute"
-    card_html.layout.z_index = "1"
-    card_html.layout.top = "0"
-    card_html.layout.left = "0"
-
-    container.layout.position = "relative"
-    container.layout.overflow = "visible"
-
-    return container
+    return widgets.VBox(
+        [card, desc_label],
+        layout=widgets.Layout(
+            align_items="center",
+            margin="5px",
+        )
+    )
 
 
 def create_card_grid(cards: List[widgets.Widget], columns: int = 3) -> widgets.Widget:
