@@ -2,7 +2,7 @@
 """Access control for dashboard widgets."""
 from typing import Set, Optional, List
 
-from models import DashboardConfig, WidgetConfig, GroupConfig, UserConfig
+from models import DashboardConfig, WidgetConfig, GroupConfig, UserConfig, Role
 
 
 class AccessController:
@@ -11,7 +11,7 @@ class AccessController:
     def __init__(self, config: DashboardConfig):
         self.config = config
 
-    def get_user_roles(self, username: str) -> Set[str]:
+    def get_user_roles(self, username: str) -> Set[Role]:
         """Get all roles for a user."""
         user_config = self.config.access_control.users.get(username, UserConfig())
         return set(user_config.roles)

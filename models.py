@@ -1,7 +1,25 @@
 # -*- coding: utf-8 -*-
 """Data models for dashboard configuration."""
 from dataclasses import dataclass, field
+from enum import Enum
 from typing import Dict, List
+
+
+# =============================================================================
+# ENUMS
+# =============================================================================
+
+class Role(Enum):
+    """Predefined user roles for access control."""
+    ADMIN = "admin"
+    ANALYST = "analyst"
+    DATA_ENTRY = "data_entry"
+    VIEWER = "viewer"
+
+
+# =============================================================================
+# DATA MODELS
+# =============================================================================
 
 
 @dataclass
@@ -11,7 +29,7 @@ class WidgetConfig:
     name: str
     description: str = ""
     icon: str = "cube"
-    roles: List[str] = field(default_factory=list)  # roles that can access this widget
+    roles: List[Role] = field(default_factory=list)  # roles that can access this widget
 
 
 @dataclass
@@ -28,7 +46,7 @@ class GroupConfig:
 @dataclass
 class UserConfig:
     """User-specific access configuration."""
-    roles: List[str] = field(default_factory=list)
+    roles: List[Role] = field(default_factory=list)
 
 
 @dataclass

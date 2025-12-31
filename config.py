@@ -6,6 +6,7 @@ from models import (
     WidgetConfig,
     AccessControlConfig,
     UserConfig,
+    Role,
 )
 
 
@@ -33,7 +34,7 @@ def get_config() -> DashboardConfig:
                                 name="System Metrics",
                                 description="Real-time system health and performance metrics",
                                 icon="heartbeat",
-                                roles=["admin", "analyst"],
+                                roles=[Role.ADMIN, Role.ANALYST],
                             )
                         ],
                     )
@@ -44,7 +45,7 @@ def get_config() -> DashboardConfig:
                         name="Sales Dashboard",
                         description="Monthly and quarterly sales overview",
                         icon="dollar-sign",
-                        roles=["admin", "analyst", "viewer"],
+                        roles=[Role.ADMIN, Role.ANALYST, Role.VIEWER],
                     )
                 ],
             ),
@@ -59,7 +60,7 @@ def get_config() -> DashboardConfig:
                         name="Data Entry Form",
                         description="Standard data input forms",
                         icon="clipboard-list",
-                        roles=["admin", "data_entry"],
+                        roles=[Role.ADMIN, Role.DATA_ENTRY],
                     )
                 ],
             ),
@@ -74,17 +75,17 @@ def get_config() -> DashboardConfig:
                         name="Settings",
                         description="Dashboard configuration and preferences",
                         icon="sliders-h",
-                        roles=["admin"],
+                        roles=[Role.ADMIN],
                     )
                 ],
             ),
         ],
         access_control=AccessControlConfig(
             users={
-                "alice": UserConfig(roles=["admin"]),
-                "bob": UserConfig(roles=["analyst"]),
-                "carol": UserConfig(roles=["data_entry"]),
-                "dave": UserConfig(roles=["viewer"]),
+                "alice": UserConfig(roles=[Role.ADMIN]),
+                "bob": UserConfig(roles=[Role.ANALYST]),
+                "carol": UserConfig(roles=[Role.DATA_ENTRY]),
+                "dave": UserConfig(roles=[Role.VIEWER]),
             },
         ),
     )
