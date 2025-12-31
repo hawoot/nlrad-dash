@@ -42,7 +42,7 @@ def create_card(
             height="140px",
             margin="10px",
             border=f"2px solid {border_color}",
-            border_radius="12px",
+            border_radius="20px",
         )
     )
     button.style.button_color = bg_color
